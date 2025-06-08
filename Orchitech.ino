@@ -120,7 +120,7 @@ public:
 
   void insertRiwayatPenyiraman(int idJalurPenyiraman) {
     StaticJsonDocument<128> doc;
-    doc["id_jalur_penyiraman"] = idJalurPenyiraman;  // Tambahan: jalur/relay
+    doc["id_jalur_penyiraman"] = idJalurPenyiraman; 
 
     String body;
     serializeJson(doc, body);
@@ -241,7 +241,6 @@ public:
       }
     }
 
-    // Reset flag saat suhu turun dan relay mati
     if (temp < threshold && _inserted) {
       _inserted = false;
     }
@@ -274,11 +273,11 @@ private:
     bool isActive = false;
     bool hasWateredToday = false;
     unsigned long lastTurnOnTime = 0;
-    unsigned long scheduledTime = 0;  // Menyimpan waktu jadwal dalam detik
+    unsigned long scheduledTime = 0;  
   };
   std::vector<Penyiram> penyirams;
   unsigned long lastPollTime = 0;
-  unsigned long pollInterval = 5000;  // Kurangi dari 15 detik ke 5 detik
+  unsigned long pollInterval = 5000; 
   String lastCheckedDay = "";
 
   int getCurrentTimeInSeconds() {
@@ -304,16 +303,13 @@ private:
     return String(days[timeinfo.tm_wday]);
   }
 
-  // Method baru untuk menangani semua pompa secara simultan
   void handleAllPenyiraman() {
     String currentDay = getCurrentDay();
     int currentSeconds = getCurrentTimeInSeconds();
 
     if (currentSeconds == -1) return;
 
-    // Cek semua pompa dalam satu loop untuk timing yang konsisten
     for (auto& penyiram : penyirams) {
-      // Skip jika sudah aktif atau sudah menyiram hari ini
       if (penyiram.isActive || penyiram.hasWateredToday) {
         continue;
       }
@@ -332,14 +328,12 @@ private:
 
       if (hariSesuai) {
         int selisih = abs(currentSeconds - jadwalSeconds);
-        // Perlebar toleransi menjadi 60 detik untuk safety
         if (selisih <= 60) {
           activatePenyiram(penyiram, currentDay);
         }
       }
     }
 
-    // Handle pompa yang sedang aktif (matikan setelah durasi tertentu)
     handleActivePenyiram();
   }
 
@@ -380,7 +374,6 @@ public:
 
       String currentDay = getCurrentDay();
       if (currentDay != lastCheckedDay) {
-        // Reset hasWateredToday hanya saat hari berganti
         for (auto& penyiram : penyirams) {
           penyiram.hasWateredToday = false;
         }
@@ -404,10 +397,9 @@ public:
 
   void update() {
     pollJadwalIfNeeded();
-    handleAllPenyiraman();  // Gunakan method baru yang handle semua pompa sekaligus
+    handleAllPenyiraman();  
   }
 
-  // Method tambahan untuk debugging
   void printStatus() {
     Serial.println("=== Status Jadwal Penyiraman ===");
     for (const auto& penyiram : penyirams) {
@@ -450,7 +442,6 @@ public:
     }
     _client.loop();
 
-    // Publish sensor data setiap 10 detik
     if (millis() - _lastPublish >= 10000) {
       _lastPublish = millis();
       publishSensorData();
